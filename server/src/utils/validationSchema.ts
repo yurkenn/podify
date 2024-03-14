@@ -1,3 +1,4 @@
+import { isValidObjectId } from 'mongoose';
 import * as yup from 'yup';
 
 export const createUserSchema = yup.object().shape({
@@ -14,4 +15,17 @@ export const createUserSchema = yup.object().shape({
     .max(20, 'Password must be at most 20 characters')
     .matches(/^[a-zA-Z0-9]{3,30}$/, 'Password can only contain letters and numbers')
     .required('Password is required'),
+});
+
+export const EmailVerificationBody = yup.object().shape({
+  token: yup.string().trim().required('Token is required'),
+  userId: yup
+    .string()
+    .transform(function (value) {
+      if (this.isType(value) && isValidObjectId(value)) {
+        return value;
+      }
+      return '';
+    })
+    .required('User id is required'),
 });

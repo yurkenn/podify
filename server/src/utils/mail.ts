@@ -28,8 +28,6 @@ export const sendVerificationMail = async (token: string, profile: Profile) => {
   const transport = generateMailTransporter();
   const { name, email, userId } = profile;
 
-  await emailVerificationToken.create({ owner: userId, token });
-
   transport.sendMail({
     to: email,
     from: VERIFICATION_EMAIL,
@@ -52,6 +50,44 @@ export const sendVerificationMail = async (token: string, profile: Profile) => {
         filename: 'welcome.png',
         path: path.join(__dirname, '../mail/welcome.png'),
         cid: 'welcome',
+      },
+    ],
+  });
+};
+
+interface Options {
+  email: string;
+  link: string;
+}
+
+export const sendForgetPasswordMail = async (options: Options) => {
+  const transport = generateMailTransporter();
+  const { email, link } = options;
+
+  const message = `Click on the link to reset your password. If you didn't request a password reset, you can ignore this email.`;
+
+  transport.sendMail({
+    to: email,
+    from: VERIFICATION_EMAIL,
+    subject: 'Password reset',
+    html: generateTemplate({
+      title: 'Password reset',
+      message,
+      logo: 'cid:logo',
+      banner: 'cid:forget_password',
+      link,
+      btnTitle: 'Reset password',
+    }),
+    attachments: [
+      {
+        filename: 'logo.png',
+        path: path.join(__dirname, '../mail/logo.png'),
+        cid: 'logo',
+      },
+      {
+        filename: 'forget_password.png',
+        path: path.join(__dirname, '../mail/forget_password.png'),
+        cid: 'forget_password',
       },
     ],
   });
