@@ -3,7 +3,11 @@ import emailVerificationToken from '@/models/emailVerificationToken';
 import passwordResetToken from '@/models/passwordResetToken';
 import User from '@/models/user';
 import { generateToken } from '@/utils/helpers';
-import { sendForgetPasswordMail, sendVerificationMail } from '@/utils/mail';
+import {
+  sendForgetPasswordMail,
+  sendPassResetSuccessMail,
+  sendVerificationMail,
+} from '@/utils/mail';
 import { RequestHandler } from 'express';
 import { isValidObjectId } from 'mongoose';
 import crypto from 'crypto';
@@ -87,4 +91,31 @@ export const generateForgetPasswordLink: RequestHandler = async (req, res) => {
   sendForgetPasswordMail({ email: user.email, link: resetLink });
 
   res.status(200).json({ message: 'Password reset link sent' });
+};
+
+export const grandValid: RequestHandler = async (req, res) => {
+  res.json({ valid: true });
+};
+
+export const updatePassword: RequestHandler = async (req, res) => {
+  const { userId, password } = req.body;
+  const user = await User.findById(userId);
+  if (!user) {
+    return res.status(404).json({ message: 'User not found' });
+  }
+
+  const matched = await user.comparePassword(password);
+  if (matched) {
+    return res
+      .status(400)
+      .json({ message: 'New password must be different from the old password' });
+  }
+
+  user.password = password;
+  await user.save();
+
+  await passwordResetToken.findOneAndDelete({ owner: userId });
+
+  sendPassResetSuccessMail(user.name, user.email);
+  res.status(200).json({ message: 'Password updated' });
 };

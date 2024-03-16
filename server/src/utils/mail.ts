@@ -3,7 +3,7 @@ import path from 'path';
 import { generateTemplate } from '@/mail/template';
 import emailVerificationToken from '@/models/emailVerificationToken';
 import { generateToken } from '@/utils/helpers';
-import { MAILTRAP_PASS, MAILTRAP_USER, VERIFICATION_EMAIL } from '@/utils/variables';
+import { MAILTRAP_PASS, MAILTRAP_USER, SIGN_IN_URL, VERIFICATION_EMAIL } from '@/utils/variables';
 import User from '@/models/user';
 
 const generateMailTransporter = () => {
@@ -76,6 +76,38 @@ export const sendForgetPasswordMail = async (options: Options) => {
       logo: 'cid:logo',
       banner: 'cid:forget_password',
       link,
+      btnTitle: 'Reset password',
+    }),
+    attachments: [
+      {
+        filename: 'logo.png',
+        path: path.join(__dirname, '../mail/logo.png'),
+        cid: 'logo',
+      },
+      {
+        filename: 'forget_password.png',
+        path: path.join(__dirname, '../mail/forget_password.png'),
+        cid: 'forget_password',
+      },
+    ],
+  });
+};
+
+export const sendPassResetSuccessMail = async (name: string, email: string) => {
+  const transport = generateMailTransporter();
+
+  const message = `Dear ${name} we just updated your password. If you didn't request a password reset, you can ignore this email. If you did, you can login with your new password.`;
+
+  transport.sendMail({
+    to: email,
+    from: VERIFICATION_EMAIL,
+    subject: 'Password Reset Successfully',
+    html: generateTemplate({
+      title: 'Password Reset Successfully',
+      message,
+      logo: 'cid:logo',
+      banner: 'cid:forget_password',
+      link: SIGN_IN_URL,
       btnTitle: 'Reset password',
     }),
     attachments: [
