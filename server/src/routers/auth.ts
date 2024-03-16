@@ -8,7 +8,11 @@ import {
 } from '@/controllers/user';
 import { isValidPassResetToken } from '@/middleware/auth';
 import { validate } from '@/middleware/validator';
-import { TokenAndIDValidation, createUserSchema } from '@/utils/validationSchema';
+import {
+  TokenAndIDValidation,
+  UpdatePasswordSchema,
+  createUserSchema,
+} from '@/utils/validationSchema';
 import { Router } from 'express';
 
 const router = Router();
@@ -25,7 +29,7 @@ router.post(
 );
 router.post(
   '/update-password',
-  validate(TokenAndIDValidation),
+  validate(UpdatePasswordSchema),
   isValidPassResetToken,
   updatePassword
 );
